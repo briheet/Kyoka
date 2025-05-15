@@ -1,7 +1,11 @@
-use std::env;
-
 use dotenv::dotenv;
 use eframe::egui;
+use fefix::{
+    self, Dictionary, GetConfig,
+    prelude::Configure,
+    tagvalue::{Decoder, DecoderBuffered},
+};
+use std::env;
 
 fn main() {
     // Load env for data n ol
@@ -13,9 +17,7 @@ fn main() {
             std::env::set_var("RUST_LOG", "info");
         }
     }
-
     pretty_env_logger::init();
-
     log::info!("started the porject");
 
     // Setup gui
@@ -27,13 +29,18 @@ fn main() {
     )
     .ok();
 
-    let name = env::var("NAME");
+    let net_type = "IS_TESTNET";
+    let is_testnet = match env::var(net_type) {
+        Ok(val) => val.to_lowercase() == "true",
+        Err(e) => {
+            log::error!("Can't determine if testnet or not: {}", e);
+            false
+        }
+    };
 
-    match name {
-        Ok(val) => println!("name: {}", val),
-        Err(e) => println!("err: {}", e),
-    }
+    pool_market_data();
 
+    log::info!("Is testnet: {}", is_testnet);
     log::info!("exiting...");
 }
 
@@ -60,4 +67,17 @@ impl eframe::App for MyEguiApp {
             ui.heading("gogo gaga");
         });
     }
+}
+
+fn pool_market_data() {
+    let fix_dictionary = Dictionary::fix44();
+    let mut fix_decoder = decoder(fix_dictionary).streaming(vec![]);
+}
+
+fn decoder(fix_dictionary: Dictionary) -> Decoder {
+    // Create a decoder, this is expensive. Should be done only once
+    let mut decoder = Decoder::new(fix_dictionary);
+
+    decoder.config_mut().set_separator(b'|');
+    decoder
 }
