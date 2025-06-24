@@ -1,11 +1,11 @@
+mod exchanges;
+
 use dotenv::dotenv;
 use eframe::egui;
-use fefix::{
-    self, Dictionary, GetConfig,
-    prelude::Configure,
-    tagvalue::{Decoder, DecoderBuffered},
-};
 use std::env;
+
+const LEFT_PANEL_WIDTH: f32 = 40.0;
+const LEFT_PANEL_RESIZEABLE: bool = true;
 
 fn main() {
     // Load env for data n ol
@@ -29,8 +29,8 @@ fn main() {
     )
     .ok();
 
-    let net_type = "IS_TESTNET";
-    let is_testnet = match env::var(net_type) {
+    const NET_TYPE: &str = "IS_TESTNET";
+    let is_testnet = match env::var(NET_TYPE) {
         Ok(val) => val.to_lowercase() == "true",
         Err(e) => {
             log::error!("Can't determine if testnet or not: {}", e);
@@ -38,7 +38,7 @@ fn main() {
         }
     };
 
-    pool_market_data();
+    // pool_market_data();
 
     log::info!("Is testnet: {}", is_testnet);
     log::info!("exiting...");
@@ -56,28 +56,18 @@ impl MyEguiApp {
 impl eframe::App for MyEguiApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::TopBottomPanel::top("top panel").show(ctx, |ui| {
-            ui.label("Top Panel");
+            ui.label("Kyoka");
         });
 
-        egui::SidePanel::left("my_left_panel").show(ctx, |ui| {
-            ui.label("Left panel");
-        });
+        egui::SidePanel::left("my_left_panel")
+            .resizable(LEFT_PANEL_RESIZEABLE)
+            .default_width(LEFT_PANEL_WIDTH)
+            .show(ctx, |ui| {
+                ui.label("Left panel");
+            });
 
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("gogo gaga");
         });
     }
-}
-
-fn pool_market_data() {
-    let fix_dictionary = Dictionary::fix44();
-    let mut fix_decoder = decoder(fix_dictionary).streaming(vec![]);
-}
-
-fn decoder(fix_dictionary: Dictionary) -> Decoder {
-    // Create a decoder, this is expensive. Should be done only once
-    let mut decoder = Decoder::new(fix_dictionary);
-
-    decoder.config_mut().set_separator(b'|');
-    decoder
 }
