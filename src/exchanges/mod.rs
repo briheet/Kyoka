@@ -5,14 +5,14 @@ use rand::RngCore;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 // Logon struct uwu
-struct Logon {
+pub struct Logon {
     heart_bt_int: u32,
     username: String,
     password: String,
 }
 
 impl Logon {
-    fn new(heart_bt_int: u32, username: &str, password: &str) -> Self {
+    pub fn new(heart_bt_int: u32, username: &str, password: &str) -> Self {
         Self {
             heart_bt_int: heart_bt_int,
             username: username.to_string(),

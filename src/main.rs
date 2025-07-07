@@ -1,5 +1,5 @@
 mod exchanges;
-
+use core::panic;
 use dotenv::dotenv;
 use eframe::egui;
 use std::env;
@@ -18,7 +18,34 @@ fn main() {
         }
     }
     pretty_env_logger::init();
-    log::info!("started the porject");
+    log::info!("Execution starts!");
+
+    // Check for type, need to push to another function for handling soon
+    const NET_TYPE: &str = "IS_TESTNET";
+
+    let _is_testnet = match env::var(NET_TYPE) {
+        Ok(val) => val.to_lowercase() == "true",
+        Err(e) => {
+            log::error!("Can't determine if testnet or not: {}", e);
+            false
+        }
+    };
+
+    // Spawn a thread UwU
+    std::thread::spawn(move || {
+        // Get username and password
+        let username = match env::var("USERNAME") {
+            Ok(val) => val,
+            Err(e) => {
+                log::error!("Can't determine the username: {}", e);
+                panic!("Missing USERNAME env variable");
+            }
+        };
+
+        let password = match env::var("password")
+
+        let login = exchanges::Logon::new(30);
+    });
 
     // Setup gui
     let native_options = eframe::NativeOptions::default();
@@ -28,20 +55,6 @@ fn main() {
         Box::new(|cc| Ok(Box::new(MyEguiApp::new(cc)))),
     )
     .ok();
-
-    const NET_TYPE: &str = "IS_TESTNET";
-    let is_testnet = match env::var(NET_TYPE) {
-        Ok(val) => val.to_lowercase() == "true",
-        Err(e) => {
-            log::error!("Can't determine if testnet or not: {}", e);
-            false
-        }
-    };
-
-    // pool_market_data();
-
-    log::info!("Is testnet: {}", is_testnet);
-    log::info!("exiting...");
 }
 
 #[derive(Default)]
